@@ -18,7 +18,7 @@ define(function(require, exports, module) {
     var View = require('famous/core/View');
 
     var No= 35;
-	var mainContext = Engine.createContext();
+    var mainContext = Engine.createContext();
     var initialRatios = [];
     var finalRatios = [];
     var activate=0;
@@ -89,20 +89,6 @@ define(function(require, exports, module) {
     		surfaces[i].setProperties({backgroundPosition:(WIDTH*i+off)+"px 0"});
     	}
     }
-    flex._eventInput.on('mousemove', function(e){
-    	activate = this.appId;
-    	if(activate==undefined){
-    		flex.setRatios(initialRatios, {curve : 'easeOut', duration : 800});
-    		//updateProperties();
-    	}
-    	
-    });
-    flex._eventInput.on('mouseout', function(e){
-        var ratios = initialRatios;
-        flex.setRatios(ratios, {curve : 'easeOut', duration : 800},updateProperties);
-       // updateProperties(ratios);
-    });
-   
     mainContext.add(flex);
     flex.setRatios(initialRatios, {curve : 'easeOut', duration : 800});
     Engine.pipe(flex);
