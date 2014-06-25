@@ -12,82 +12,98 @@
 
 define(function(require, exports, module) {
     var Engine = require('famous/core/Engine');
-    var ImageSurface = require('famous/surfaces/ImageSurface');
-    var StateModifier = require('famous/modifiers/StateModifier');
-    var FlexibleLayout = require('famous/views/FlexibleLayout');
+    var Surface = require('famous/core/Surface');
+    var Modifier = require('famous/core/Modifier');
+    var FlexibleLayout = require('views/FlexibleLayout');
+    var View = require('famous/core/View');
+
+    var No= 35;
 	var mainContext = Engine.createContext();
     var initialRatios = [];
     var finalRatios = [];
-    var No= 30;
-    if (window.innerWidth < 600)
-        No = 15;
+    var activate=0;
     var flex = new FlexibleLayout({
-        ratios : initialRatios
+        ratios : initialRatios,
+        transition: {
+            curve: 'easeInOut',
+            duration: 30
+          }
     });
-    var flexMod = new StateModifier({
-            origin: [0,0.05]
-    });
+
     var surfaces = [];
-    var size = [undefined, 200];
+    var WIDTH = 105;
+    var slug = "narciso-rodriguez";
+    var imageSrc =  "http://graphics8.nytimes.com/newsgraphics/2013/09/13/fashion-week-editors-picks/assets/thumbs-" + 1 + "/" + slug + ".jpg";
+    var initialScale =(window.innerWidth/No)/WIDTH;
     for (var i = 0; i < No; i++) {
-        var temp = new ImageSurface({
+        size = [WIDTH, 225]
+        var surface =new Surface({
             size: size,
-	        content:'images/img'+(i%12)+'.jpg',
             properties: {
- //               backgroundColor: "hsl(" + (i * 360 / 50) + ", 100%, 50%)",
-                border:"solid 1px black"
-            }
-        });
-        surfaces.push(temp);
-        initialRatios.push(1);
-        finalRatios.push(1);
+                background: "url("+imageSrc+") "+(WIDTH*i-WIDTH*initialScale)+"px 0",
+                border:"solid 1px "+"hsl(" + (i * 360 / 50) + ", 100%, 100%)",
+                textAlign:"left"
+            },
+           // content:data[i]
+        })
+        surface.appId = i;
+        surfaces.push(surface);
+        initialRatios.push(initialScale);
+        finalRatios.push(initialScale);
+        
+        surface.on('mousemove', function(e){
+            activate = this.appId;
+            //console.log(activate);
+            var ratios = createRatio(e.clientX,e.offsetX);
+            flex.setRatios(ratios, {curve : 'easeOut', duration : 200});
+            //Update property
+            updateProperties(ratios);
+         }.bind(surface));
     }
 
     flex.sequenceFrom(surfaces);
     function createRatio(x){
     	var active = No*x/window.innerWidth;
+		//console.log(active);
     	var min = 0.1;
+    	var scale = WIDTH/(window.innerWidth/No) *active/Math.round(active);
+    	var left = active;
+    	var right = No-active;
     	//active = Math.round(active);
     	 for (var i = 0; i < No; i++) {
-    		 finalRatios[i] = 1-2*(Math.abs(i-active)/No);
+    		 //finalRatios[i] = ((i==activate?scale:1));//-2*(Math.abs(i-active)/No));
+			 var site = i<=active?left:right;
+    		 var smooth = Math.abs(i-active);///site;
+    		
+    		 finalRatios[i] =1 -1.8*smooth/(site+1);
     		 finalRatios[i] = finalRatios[i]<min?min:finalRatios[i];
-    		 finalRatios[i] = finalRatios[i]>1?1:finalRatios[i];
+			 //console.log(finalRatios[i]);
+    		 //Update property
     	 }
     	 return finalRatios;
     }
-    var toggle = false;
-    Engine.on('click', function(){
-        var ratios = toggle ? initialRatios : finalRatios;
-        flex.setRatios(ratios, {curve : 'easeOut', duration : 100});
-        toggle = !toggle;
+    function updateProperties(ratios){
+    	if(!ratios)ratios = initialRatios;
+    	for (var i = 0; i < No; i++) {
+    		var off = -WIDTH*(1-ratios[i])/2;
+    		surfaces[i].setProperties({backgroundPosition:(WIDTH*i+off)+"px 0"});
+    	}
+    }
+    flex._eventInput.on('mousemove', function(e){
+    	activate = this.appId;
+    	if(activate==undefined){
+    		flex.setRatios(initialRatios, {curve : 'easeOut', duration : 800});
+    		//updateProperties();
+    	}
+    	
     });
-    Engine.on('mousemove', function(e){
-        var ratios = createRatio(e.clientX);
-         console.log('touch start' + e.clientX);
-        flex.setRatios(ratios, {curve : 'easeOut', duration : 30});
-    });
-    Engine.on('touchstart',function(e) {
-        var ratios = createRatio(e.touches[0].clientX);
-        console.log('touch start' + e.touches[0].clientX);
-        flex.setRatios(ratios);
-       // , {curve : 'easeOut', duration : 30});
-    });
-    Engine.on('touchmove', function(e){
-        var ratios = createRatio(e.touches[0].clientX);
-        console.log('touch start' + e.touches[0].clientX);
-        flex.setRatios(ratios);
-        // {curve : 'easeOut', duration : 30});
-    });
-    Engine.on('mouseleave', function(e){
+    flex._eventInput.on('mouseout', function(e){
         var ratios = initialRatios;
-        console.log('touch start' + e.clientX);
-        flex.setRatios(ratios, {curve : 'easeOut', duration : 500});
+        flex.setRatios(ratios, {curve : 'easeOut', duration : 800},updateProperties);
+       // updateProperties(ratios);
     });
-    Engine.on('touchend', function(e){
-        var ratios = initialRatios;
-        console.log('touch end');
-        flex.setRatios(ratios);
-        //, {curve : 'easeOut', duration : 500});
-    });
-    mainContext.add(flexMod).add(flex);
+   
+    mainContext.add(flex);
+    flex.setRatios(initialRatios, {curve : 'easeOut', duration : 800});
+    Engine.pipe(flex);
 });
