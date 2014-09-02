@@ -92,4 +92,8 @@ define(function(require, exports, module) {
     mainContext.add(flex);
     flex.setRatios(initialRatios, {curve : 'easeOut', duration : 800});
     Engine.pipe(flex);
+    var ratios = createRatio(30,0);
+            flex.setRatios(ratios, {curve : 'easeOut', duration : 200});
+            //Update property
+            updateProperties(ratios);
 });
