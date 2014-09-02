@@ -17,7 +17,7 @@ define(function(require, exports, module) {
     var FlexibleLayout = require('views/FlexibleLayout');
     var View = require('famous/core/View');
 
-    var No= 25;
+    var No= 35;
     var mainContext = Engine.createContext();
     var initialRatios = [];
     var finalRatios = [];
@@ -92,7 +92,7 @@ define(function(require, exports, module) {
     mainContext.add(flex);
     flex.setRatios(initialRatios, {curve : 'easeOut', duration : 800});
     Engine.pipe(flex);
-    var ratios = createRatio(30,0);
+    var ratios = createRatio(300,0);
             flex.setRatios(ratios, {curve : 'easeOut', duration : 200});
             //Update property
             updateProperties(ratios);
