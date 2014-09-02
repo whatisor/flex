@@ -17,7 +17,7 @@ define(function(require, exports, module) {
     var FlexibleLayout = require('views/FlexibleLayout');
     var View = require('famous/core/View');
 
-    var No= 35;
+    var No= 25;
     var mainContext = Engine.createContext();
     var initialRatios = [];
     var finalRatios = [];
